@@ -6,6 +6,7 @@ import {
   CategoryScale, LinearScale, BarElement,
 } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
+import { getExpenses, getStats } from '../api';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
@@ -17,20 +18,15 @@ export default function Analyst({ onGoEdit }) {
   const [allExpenses, setAllExpenses] = useState([]);
   const [openDay, setOpenDay] = useState(null);
 
-  const fetchStats = async () => {
-    const res = await fetch(`http://localhost:3001/api/stats?month=${month}`);
-    setStats(await res.json());
-  };
-
-  const fetchAll = async () => {
-    const res = await fetch(`http://localhost:3001/api/expenses?month=${month}`);
-    setAllExpenses(await res.json());
+  const fetchData = async () => {
+    const [s, all] = await Promise.all([getStats(month), getExpenses(month)]);
+    setStats(s);
+    setAllExpenses(all);
+    setOpenDay(null);
   };
 
   useEffect(() => {
-    fetchStats();
-    fetchAll();
-    setOpenDay(null);
+    fetchData();
   }, [month]);
 
   const getDayExpenses = (date) => allExpenses.filter((e) => e.date === date);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import dayjs from 'dayjs';
+import { getExpenses, addExpense, deleteExpense } from '../api';
 
 const CATEGORIES = [
   { key: 'breakfast', label: '早餐', icon: ' ' },
@@ -47,8 +47,7 @@ export default function Notebook({ date, editDate, onBack }) {
 
   const fetchExpenses = useCallback(async () => {
     const month = date.slice(0, 7);
-    const res = await fetch(`http://localhost:3001/api/expenses?month=${month}`);
-    const all = await res.json();
+    const all = await getExpenses(month);
     const dayItems = all.filter((e) => e.date === date);
     setExpenses(dayItems);
     if (dayItems.length > 0) {
@@ -107,11 +106,7 @@ export default function Notebook({ date, editDate, onBack }) {
     if (items.length === 0) return;
 
     for (const item of items) {
-      await fetch('http://localhost:3001/api/expenses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item),
-      });
+      await addExpense(item);
     }
 
     setSubmittedKeys(new Set([...submittedKeys, ...newKeys]));
@@ -123,7 +118,7 @@ export default function Notebook({ date, editDate, onBack }) {
   };
 
   const handleDelete = async (id) => {
-    await fetch(`http://localhost:3001/api/expenses/${id}`, { method: 'DELETE' });
+    await deleteExpense(id);
     fetchExpenses();
   };
 
